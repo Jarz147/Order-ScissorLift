@@ -44,15 +44,18 @@ create table if not exists public.bookings (
 );
 
 -- 5) CEGAH DOUBLE BOOKING (level database)
---    Tidak ada dua booking berstatus 'confirmed' dengan rentang tanggal
---    yang saling tumpang tindih untuk lift yang sama.
+--    Aturan: SATU LIFT = SATU USER SEKALIGUS.
+--    Satu lift hanya boleh punya SATU booking berstatus 'confirmed' dalam
+--    satu waktu (tidak peduli tanggalnya). Lift baru bisa dipesan lagi
+--    setelah booking 'confirmed' itu diselesaikan/dibatalkan.
 alter table public.bookings
   drop constraint if exists bookings_no_overlap;
 alter table public.bookings
-  add constraint bookings_no_overlap
+  drop constraint if exists bookings_single_confirmed;
+alter table public.bookings
+  add constraint bookings_single_confirmed
   exclude using gist (
-    lift_id with =,
-    daterange(start_date, end_date) with &&
+    lift_id with =
   ) where (status = 'confirmed');
 
 -- 6) Index pendukung

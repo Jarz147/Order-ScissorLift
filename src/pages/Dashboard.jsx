@@ -2,10 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export default function Dashboard() {
   const [lifts, setLifts] = useState([])
   const [bookedMap, setBookedMap] = useState({})
@@ -26,7 +22,6 @@ export default function Dashboard() {
         .from('bookings')
         .select('*')
         .eq('status', 'confirmed')
-        .gte('end_date', todayISO())
 
       if (cancelled) return
       if (liftErr || bookingErr) {
@@ -69,8 +64,7 @@ export default function Dashboard() {
 
   const isBookedToday = (liftId) => {
     const list = bookedMap[liftId] || []
-    const today = todayISO()
-    return list.some((b) => b.start_date <= today && b.end_date >= today)
+    return list.length > 0
   }
 
   if (loading) {
@@ -87,7 +81,7 @@ export default function Dashboard() {
       {error && <div className="alert alert--error">{error}</div>}
       <div className="grid">
         {lifts.map((lift) => {
-          const bookedToday = isBookedToday(lift.id)
+          const booked = isBookedToday(lift.id)
           const nextBookings = bookedMap[lift.id] || []
           const firstNext = nextBookings
             .slice()
@@ -108,8 +102,8 @@ export default function Dashboard() {
                 <span>Kapasitas: {lift.capacity_kg} kg</span>
                 {lift.status === 'maintenance' ? (
                   <span className="badge badge--maintenance">Sedang perawatan</span>
-                ) : bookedToday ? (
-                  <span className="badge badge--error">Dipinjam hari ini</span>
+                ) : booked ? (
+                  <span className="badge badge--error">Sedang dipesan</span>
                 ) : (
                   <span className="badge badge--ok">Siap dipakai</span>
                 )}
@@ -117,15 +111,15 @@ export default function Dashboard() {
               {lift.status === 'maintenance' && (
                 <p className="muted small">Lift tidak tersedia untuk pemesanan saat perawatan.</p>
               )}
-              {firstNext && (
+              {booked && (
                 <p className="muted small">
-                  Pemesanan berikutnya:{' '}
+                  Pemesanan aktif:{' '}
                   {new Date(firstNext.start_date).toLocaleDateString('id-ID')} –
                   {new Date(firstNext.end_date).toLocaleDateString('id-ID')}
                 </p>
               )}
               <div className="card__actions">
-                {lift.status === 'maintenance' ? (
+                {lift.status === 'maintenance' || booked ? (
                   <button className="btn btn--block" disabled>
                     Tidak tersedia
                   </button>
