@@ -278,6 +278,7 @@ drop policy if exists "liftimg_read_public" on storage.objects;
 create policy "liftimg_read_public" on storage.objects
   for select to authenticated using (bucket_id = 'lift-images');
 -- izin baca publik untuk anon (biasanya otomatis karena bucket public)
+drop policy if exists "liftimg_read_anon" on storage.objects;
 create policy "liftimg_read_anon" on storage.objects
   for select to anon using (bucket_id = 'lift-images');
 
