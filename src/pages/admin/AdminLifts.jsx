@@ -32,6 +32,15 @@ export default function AdminLifts() {
 
   useEffect(() => {
     load()
+    const channel = supabase
+      .channel('adminlifts-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lifts' },
+        () => load(),
+      )
+      .subscribe()
+    return () => supabase.removeChannel(channel)
   }, [load])
 
   const handleCreate = async (e) => {

@@ -45,6 +45,15 @@ export default function MyBookings() {
 
   useEffect(() => {
     load()
+    const channel = supabase
+      .channel('mybookings-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        () => load(),
+      )
+      .subscribe()
+    return () => supabase.removeChannel(channel)
   }, [load])
 
   const handleCancel = async (id) => {

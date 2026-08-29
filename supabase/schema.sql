@@ -59,6 +59,10 @@ alter table public.bookings
 create index if not exists bookings_lift_date_idx on public.bookings (lift_id, start_date, end_date);
 create index if not exists bookings_user_idx on public.bookings (user_id);
 
+-- 7) AKTIFKAN REALTIME agar perubahan data tersinkron antar user
+alter publication supabase_realtime add table public.bookings;
+alter publication supabase_realtime add table public.lifts;
+
 -- 7) TRIGGER: buat baris profiles otomatis saat user baru terdaftar
 --    (berlaku baik untuk self-register maupun admin_create_user)
 create or replace function public.handle_new_user()

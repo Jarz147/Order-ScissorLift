@@ -42,6 +42,15 @@ export default function AdminBookings() {
 
   useEffect(() => {
     load()
+    const channel = supabase
+      .channel('adminbookings-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        () => load(),
+      )
+      .subscribe()
+    return () => supabase.removeChannel(channel)
   }, [load])
 
   const handleStatus = async (id, status) => {

@@ -45,8 +45,25 @@ export default function Dashboard() {
       setLoading(false)
     }
     load()
+
+    // Sinkronisasi real-time: reload saat ada pemesanan/lift berubah
+    const channel = supabase
+      .channel('dashboard-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        () => load(),
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lifts' },
+        () => load(),
+      )
+      .subscribe()
+
     return () => {
       cancelled = true
+      supabase.removeChannel(channel)
     }
   }, [])
 
