@@ -77,6 +77,11 @@ export default function Dashboard() {
             .sort((a, b) => (a.start_date < b.start_date ? -1 : 1))[0]
           return (
             <div key={lift.id} className="card">
+              {lift.image_url ? (
+                <img className="card__img" src={lift.image_url} alt={lift.name} />
+              ) : (
+                <div className="card__img card__img--placeholder">Scissor Lift</div>
+              )}
               <div className="card__head">
                 <h3>{lift.name}</h3>
                 <span className="badge badge--muted">{lift.code}</span>

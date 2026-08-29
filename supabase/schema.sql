@@ -21,9 +21,13 @@ create table if not exists public.lifts (
   code text not null unique,
   capacity_kg numeric,
   description text,
+  image_url text,
   status text not null default 'available' check (status in ('available', 'maintenance')),
   created_at timestamptz not null default now()
 );
+
+-- tambahkan kolom image_url bila belum ada (untuk tabel yang sudah dibuat)
+alter table public.lifts add column if not exists image_url text;
 
 -- 4) Tabel BOOKINGS
 create table if not exists public.bookings (

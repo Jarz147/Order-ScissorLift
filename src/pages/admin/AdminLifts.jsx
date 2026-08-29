@@ -10,6 +10,7 @@ export default function AdminLifts() {
     code: '',
     capacity_kg: '',
     description: '',
+    image_url: '',
     status: 'available',
   })
   const [busy, setBusy] = useState(false)
@@ -39,6 +40,7 @@ export default function AdminLifts() {
       code: form.code,
       capacity_kg: form.capacity_kg ? Number(form.capacity_kg) : null,
       description: form.description || null,
+      image_url: form.image_url || null,
       status: form.status,
     })
     setBusy(false)
@@ -46,7 +48,7 @@ export default function AdminLifts() {
       setError(error.message)
       return
     }
-    setForm({ name: '', code: '', capacity_kg: '', description: '', status: 'available' })
+    setForm({ name: '', code: '', capacity_kg: '', description: '', image_url: '', status: 'available' })
     load()
   }
 
@@ -120,6 +122,15 @@ export default function AdminLifts() {
               rows={2}
             />
           </label>
+          <label>
+            URL Gambar
+            <input
+              type="url"
+              value={form.image_url}
+              onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+              placeholder="https://contoh.com/gambar-lift.jpg"
+            />
+          </label>
           <button type="submit" className="btn btn--primary" disabled={busy}>
             {busy ? 'Menyimpan...' : 'Tambah Lift'}
           </button>
@@ -135,6 +146,9 @@ export default function AdminLifts() {
         <div className="list">
           {lifts.map((lift) => (
             <div key={lift.id} className="card card--row">
+              {lift.image_url && (
+                <img className="thumb" src={lift.image_url} alt={lift.name} />
+              )}
               <div className="card__info">
                 <strong>
                   {lift.name} <span className="badge badge--muted">{lift.code}</span>
