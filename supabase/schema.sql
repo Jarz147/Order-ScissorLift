@@ -159,6 +159,14 @@ alter table public.profiles enable row level security;
 alter table public.lifts enable row level security;
 alter table public.bookings enable row level security;
 
+-- Bersihkan policy LAMA yang memakai subquery rekursif (jika pernah dibuat)
+drop policy if exists "profiles_select_own_or_admin" on public.profiles;
+drop policy if exists "profiles_update_own_or_admin" on public.profiles;
+drop policy if exists "bookings_select_own_or_admin" on public.bookings;
+drop policy if exists "bookings_update_own_or_admin" on public.bookings;
+drop policy if exists "bookings_update_own" on public.bookings;
+drop policy if exists "bookings_update_admin" on public.bookings;
+
 -- PROFILES
 -- select: user bisa baca dirinya sendiri (policy terpisah), admin baca semua
 drop policy if exists "profiles_select_own" on public.profiles;
