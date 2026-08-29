@@ -137,24 +137,46 @@ $$;
 -- =====================================================================
 --  ROW LEVEL SECURITY
 -- =====================================================================
+-- Helper untuk cek admin. Security definer => dijalankan sebagai owner
+-- (postgres), sehingga MEMBYPASS RLS dan TIDAK menimbulkan rekursi.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.is_admin() to service_role;
+
 alter table public.profiles enable row level security;
 alter table public.lifts enable row level security;
 alter table public.bookings enable row level security;
 
 -- PROFILES
-drop policy if exists "profiles_select_own_or_admin" on public.profiles;
-create policy "profiles_select_own_or_admin" on public.profiles
-  for select using (
-    auth.uid() = id or
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+-- select: user bisa baca dirinya sendiri (policy terpisah), admin baca semua
+drop policy if exists "profiles_select_own" on public.profiles;
+create policy "profiles_select_own" on public.profiles
+  for select using (auth.uid() = id);
 
-drop policy if exists "profiles_update_own_or_admin" on public.profiles;
-create policy "profiles_update_own_or_admin" on public.profiles
-  for update using (
-    auth.uid() = id or
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+drop policy if exists "profiles_select_admin" on public.profiles;
+create policy "profiles_select_admin" on public.profiles
+  for select using (public.is_admin());
+
+-- update: user bisa ubah dirinya sendiri, admin ubah semua
+drop policy if exists "profiles_update_own" on public.profiles;
+create policy "profiles_update_own" on public.profiles
+  for update using (auth.uid() = id);
+
+drop policy if exists "profiles_update_admin" on public.profiles;
+create policy "profiles_update_admin" on public.profiles
+  for update using (public.is_admin());
 
 -- (INSERT dikelola oleh trigger handle_new_user dan fungsi security definer)
 
@@ -165,40 +187,36 @@ create policy "lifts_select_auth" on public.lifts
 
 drop policy if exists "lifts_admin_insert" on public.lifts;
 create policy "lifts_admin_insert" on public.lifts
-  for insert with check (
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+  for insert with check (public.is_admin());
 
 drop policy if exists "lifts_admin_update" on public.lifts;
 create policy "lifts_admin_update" on public.lifts
-  for update using (
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+  for update using (public.is_admin());
 
 drop policy if exists "lifts_admin_delete" on public.lifts;
 create policy "lifts_admin_delete" on public.lifts
-  for delete using (
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+  for delete using (public.is_admin());
 
 -- BOOKINGS
-drop policy if exists "bookings_select_own_or_admin" on public.bookings;
-create policy "bookings_select_own_or_admin" on public.bookings
-  for select using (
-    auth.uid() = user_id or
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+drop policy if exists "bookings_select_own" on public.bookings;
+create policy "bookings_select_own" on public.bookings
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "bookings_select_admin" on public.bookings;
+create policy "bookings_select_admin" on public.bookings
+  for select using (public.is_admin());
 
 drop policy if exists "bookings_insert_auth" on public.bookings;
 create policy "bookings_insert_auth" on public.bookings
   for insert with check (auth.uid() = user_id);
 
-drop policy if exists "bookings_update_own_or_admin" on public.bookings;
-create policy "bookings_update_own_or_admin" on public.bookings
-  for update using (
-    auth.uid() = user_id or
-    (select role from public.profiles where id = auth.uid()) = 'admin'
-  );
+drop policy if exists "bookings_update_own" on public.bookings;
+create policy "bookings_update_own" on public.bookings
+  for update using (auth.uid() = user_id);
+
+drop policy if exists "bookings_update_admin" on public.bookings;
+create policy "bookings_update_admin" on public.bookings
+  for update using (public.is_admin());
 
 -- =====================================================================
 --  STORAGE BUCKET untuk dokumen lampiran
@@ -220,7 +238,7 @@ create policy "doc_read_owner_or_admin" on storage.objects
   for select to authenticated using (
     bucket_id = 'booking-documents' and (
       (storage.foldername(name))[1] = auth.uid()::text
-      or (select role from public.profiles where id = auth.uid()) = 'admin'
+      or public.is_admin()
     )
   );
 
