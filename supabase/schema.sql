@@ -152,6 +152,7 @@ as $$
   );
 $$;
 
+grant execute on function public.is_admin() to anon;
 grant execute on function public.is_admin() to authenticated;
 grant execute on function public.is_admin() to service_role;
 
