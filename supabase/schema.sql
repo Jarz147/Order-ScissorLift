@@ -256,6 +256,28 @@ create policy "doc_read_owner_or_admin" on storage.objects
   );
 
 -- =====================================================================
+--  STORAGE BUCKET untuk gambar scissor lift (public)
+-- =====================================================================
+insert into storage.buckets (id, name, public)
+values ('lift-images', 'lift-images', true)
+on conflict (id) do nothing;
+
+-- hanya admin yang boleh mengunggah gambar lift
+drop policy if exists "liftimg_upload_admin" on storage.objects;
+create policy "liftimg_upload_admin" on storage.objects
+  for insert to authenticated with check (
+    bucket_id = 'lift-images' and public.is_admin()
+  );
+
+-- pembaca publik boleh melihat gambar lift
+drop policy if exists "liftimg_read_public" on storage.objects;
+create policy "liftimg_read_public" on storage.objects
+  for select to authenticated using (bucket_id = 'lift-images');
+-- izin baca publik untuk anon (biasanya otomatis karena bucket public)
+create policy "liftimg_read_anon" on storage.objects
+  for select to anon using (bucket_id = 'lift-images');
+
+-- =====================================================================
 --  JADIKAN DIRI ANDA ADMIN PERTAMA
 --  1) Daftarkan akun Anda lewat halaman Register (atau buat di
 --     Authentication > Users).
