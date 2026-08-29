@@ -84,12 +84,17 @@ export default function Dashboard() {
               <p className="muted">{lift.description}</p>
               <div className="card__meta">
                 <span>Kapasitas: {lift.capacity_kg} kg</span>
-                {bookedToday ? (
+                {lift.status === 'maintenance' ? (
+                  <span className="badge badge--maintenance">Sedang perawatan</span>
+                ) : bookedToday ? (
                   <span className="badge badge--error">Dipinjam hari ini</span>
                 ) : (
-                  <span className="badge badge--ok">Tersedia hari ini</span>
+                  <span className="badge badge--ok">Siap dipakai</span>
                 )}
               </div>
+              {lift.status === 'maintenance' && (
+                <p className="muted small">Lift tidak tersedia untuk pemesanan saat perawatan.</p>
+              )}
               {firstNext && (
                 <p className="muted small">
                   Pemesanan berikutnya:{' '}
@@ -98,9 +103,15 @@ export default function Dashboard() {
                 </p>
               )}
               <div className="card__actions">
-                <Link to={`/booking/${lift.id}`} className="btn btn--primary btn--block">
-                  Pesan
-                </Link>
+                {lift.status === 'maintenance' ? (
+                  <button className="btn btn--block" disabled>
+                    Tidak tersedia
+                  </button>
+                ) : (
+                  <Link to={`/booking/${lift.id}`} className="btn btn--primary btn--block">
+                    Pesan
+                  </Link>
+                )}
               </div>
             </div>
           )

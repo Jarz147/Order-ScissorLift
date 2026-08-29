@@ -76,6 +76,11 @@ export default function Booking() {
     e.preventDefault()
     setError('')
 
+    if (lift?.status === 'maintenance') {
+      setError('Scissor lift sedang dalam perawatan dan tidak dapat dipesan.')
+      return
+    }
+
     if (!startDate || !endDate) {
       setError('Tanggal mulai dan selesai wajib diisi.')
       return
@@ -192,10 +197,15 @@ export default function Booking() {
                 Lift tidak dapat dipesan pada rentang tanggal yang dipilih.
               </div>
             )}
+            {lift.status === 'maintenance' && (
+              <div className="alert alert--error">
+                Lift sedang dalam perawatan dan tidak dapat dipesan.
+              </div>
+            )}
             <button
               type="submit"
               className="btn btn--primary"
-              disabled={submitting || conflict}
+              disabled={submitting || conflict || lift.status === 'maintenance'}
             >
               {submitting ? 'Menyimpan...' : 'Konfirmasi Pemesanan'}
             </button>
