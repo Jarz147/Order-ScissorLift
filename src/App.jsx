@@ -7,7 +7,6 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Booking from './pages/Booking'
-import MyBookings from './pages/MyBookings'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminLifts from './pages/admin/AdminLifts'
 import AdminBookings from './pages/admin/AdminBookings'
@@ -28,7 +27,6 @@ function App() {
           >
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/booking/:liftId" element={<Booking />} />
-            <Route path="/my-bookings" element={<MyBookings />} />
             <Route
               path="/admin/users"
               element={

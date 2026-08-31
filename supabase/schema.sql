@@ -202,6 +202,11 @@ drop policy if exists "profiles_select_admin" on public.profiles;
 create policy "profiles_select_admin" on public.profiles
   for select using (public.is_admin());
 
+-- select: semua user login boleh melihat profil (untuk menampilkan nama pemesan di log)
+drop policy if exists "profiles_select_auth" on public.profiles;
+create policy "profiles_select_auth" on public.profiles
+  for select using (auth.role() = 'authenticated');
+
 -- update: user bisa ubah dirinya sendiri, admin ubah semua
 drop policy if exists "profiles_update_own" on public.profiles;
 create policy "profiles_update_own" on public.profiles
@@ -231,13 +236,12 @@ create policy "lifts_admin_delete" on public.lifts
   for delete using (public.is_admin());
 
 -- BOOKINGS
+-- select: semua user yang login BISA melihat seluruh log pemesanan
 drop policy if exists "bookings_select_own" on public.bookings;
-create policy "bookings_select_own" on public.bookings
-  for select using (auth.uid() = user_id);
-
 drop policy if exists "bookings_select_admin" on public.bookings;
-create policy "bookings_select_admin" on public.bookings
-  for select using (public.is_admin());
+drop policy if exists "bookings_select_all" on public.bookings;
+create policy "bookings_select_all" on public.bookings
+  for select using (auth.role() = 'authenticated');
 
 drop policy if exists "bookings_insert_auth" on public.bookings;
 create policy "bookings_insert_auth" on public.bookings

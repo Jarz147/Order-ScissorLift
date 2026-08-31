@@ -129,7 +129,7 @@ export default function Booking() {
       return
     }
 
-    navigate('/my-bookings')
+    navigate('/dashboard')
   }
 
   if (loading) {

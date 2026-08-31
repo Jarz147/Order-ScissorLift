@@ -21,9 +21,6 @@ export default function Layout() {
           <NavLink to="/dashboard" className={linkClass}>
             Daftar Lift
           </NavLink>
-          <NavLink to="/my-bookings" className={linkClass}>
-            Pemesanan Saya
-          </NavLink>
           {profile?.role === 'admin' && (
             <>
               <NavLink to="/admin/users" className={linkClass}>

@@ -237,6 +237,64 @@ h3 {
   border: 0;
 }
 
+/* Dashboard layout: lift di kiri, log pemesanan di kanan */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.dashboard-lifts h2,
+.dashboard-log h2 {
+  margin: 0 0 12px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.log-table th,
+.log-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.log-table th {
+  background: #f8fafc;
+  font-weight: 700;
+  color: var(--muted);
+  position: sticky;
+  top: 0;
+}
+
+.log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.btn--sm {
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card__meta {
   display: flex;
   gap: 16px;
