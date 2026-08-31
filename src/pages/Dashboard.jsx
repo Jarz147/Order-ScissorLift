@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
+function todayISO() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 const statusLabel = {
   pending: 'Menunggu approval',
   confirmed: 'Dikonfirmasi',
@@ -74,7 +78,11 @@ export default function Dashboard() {
     }
   }, [])
 
-  const isBooked = (liftId) => (bookedMap[liftId] || []).length > 0
+  const isBookedToday = (liftId) => {
+    const list = bookedMap[liftId] || []
+    const today = todayISO()
+    return list.some((b) => b.start_date <= today && b.end_date >= today)
+  }
 
   const handleCancel = async (id) => {
     if (!window.confirm('Batalkan pemesanan ini?')) return
@@ -102,7 +110,10 @@ export default function Dashboard() {
         <div className="dashboard-lifts">
           <h2>Daftar Lift</h2>
           {lifts.map((lift) => {
-            const booked = isBooked(lift.id)
+            const bookedToday = isBookedToday(lift.id)
+            const upcoming = (bookedMap[lift.id] || [])
+              .slice()
+              .sort((a, b) => (a.start_date < b.start_date ? -1 : 1))
             return (
               <div key={lift.id} className="card">
                 {lift.image_url ? (
@@ -119,20 +130,32 @@ export default function Dashboard() {
                   <span>Kapasitas: {lift.capacity_kg} kg</span>
                   {lift.status === 'maintenance' ? (
                     <span className="badge badge--maintenance">Sedang perawatan</span>
-                  ) : booked ? (
-                    <span className="badge badge--error">Sedang dipesan</span>
+                  ) : bookedToday ? (
+                    <span className="badge badge--error">Sedang dipakai hari ini</span>
                   ) : (
                     <span className="badge badge--ok">Siap dipakai</span>
                   )}
                 </div>
+                {upcoming.length > 0 && (
+                  <p className="muted small">
+                    Pemesanan:{' '}
+                    {upcoming
+                      .map((b) =>
+                        b.status === 'pending' ? 'pending ' : '',
+                      )
+                      .join('')}
+                    {upcoming
+                      .map(
+                        (b) =>
+                          `${new Date(b.start_date).toLocaleDateString('id-ID')}–${new Date(b.end_date).toLocaleDateString('id-ID')}`,
+                      )
+                      .join(', ')}
+                  </p>
+                )}
                 <div className="card__actions">
                   {lift.status === 'maintenance' ? (
                     <button className="btn btn--block" disabled>
                       Tidak tersedia
-                    </button>
-                  ) : booked ? (
-                    <button className="btn btn--block" disabled>
-                      Sedang digunakan
                     </button>
                   ) : (
                     <Link to={`/booking/${lift.id}`} className="btn btn--primary btn--block">

@@ -46,21 +46,21 @@ export default function Booking() {
     }
   }, [liftId])
 
-  const checkConflict = async () => {
+  const checkConflict = async (start, end) => {
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
       .eq('lift_id', liftId)
       .in('status', ['pending', 'confirmed'])
+      .lte('start_date', end)
+      .gte('end_date', start)
     if (error) {
       setError(error.message)
       return false
     }
     if (data.length > 0) {
       setConflict(true)
-      setError(
-        'Scissor lift sedang dalam proses pemesanan (menunggu approval) atau sedang digunakan dan tidak dapat dipesan.',
-      )
+      setError('Scissor lift sudah dipesan pada rentang tanggal tersebut (atau sedang menunggu approval).')
       return false
     }
     setConflict(false)
@@ -71,7 +71,7 @@ export default function Booking() {
   const handleDateChange = (setter) => (e) => {
     const value = e.target.value
     setter(value)
-    checkConflict()
+    checkConflict(value === '' ? todayISO() : value, endDate || todayISO())
   }
 
   const handleSubmit = async (e) => {
@@ -92,7 +92,7 @@ export default function Booking() {
       return
     }
 
-    const free = await checkConflict()
+    const free = await checkConflict(startDate, endDate)
     if (!free) return
 
     setSubmitting(true)
@@ -126,7 +126,7 @@ export default function Booking() {
     if (insErr) {
       if (insErr.code === '23P01') {
         setConflict(true)
-        setError('Scissor lift sudah dipesan oleh user lain (data terbaru) dan tidak dapat dipesan lagi.')
+        setError('Scissor lift sudah dipesan pada rentang tanggal tersebut (data terbaru). Pilih tanggal lain.')
       } else {
         setError(insErr.message)
       }

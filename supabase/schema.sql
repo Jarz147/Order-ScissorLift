@@ -51,10 +51,9 @@ alter table public.bookings
   check (status in ('pending', 'confirmed', 'rejected', 'cancelled', 'completed'));
 
 -- 6) CEGAH DOUBLE BOOKING (level database)
---    Aturan: SATU LIFT = SATU USER SEKALIGUS.
---    Lift terkunci (hanya boleh ada 1 booking aktif per lift) selama
---    statusnya 'pending' (menunggu approval admin) atau 'confirmed'.
---    Lift baru bisa dipesan lagi setelah booking itu diselesaikan/ditolak/dibatalkan.
+--    Berbasis TANGGAL: satu lift tidak boleh punya dua booking (pending/confirmed)
+--    dengan rentang tanggal yang SALING TABRAKAN. Booking di tanggal lain
+--    yang tidak bertabrakan tetap boleh.
 alter table public.bookings
   drop constraint if exists bookings_no_overlap;
 alter table public.bookings
@@ -62,7 +61,8 @@ alter table public.bookings
 alter table public.bookings
   add constraint bookings_single_confirmed
   exclude using gist (
-    lift_id with =
+    lift_id with =,
+    daterange(start_date, end_date) with &&
   ) where (status in ('pending', 'confirmed'));
 
 -- 6) Index pendukung
