@@ -119,9 +119,13 @@ export default function Dashboard() {
                 </p>
               )}
               <div className="card__actions">
-                {lift.status === 'maintenance' || booked ? (
+                {lift.status === 'maintenance' ? (
                   <button className="btn btn--block" disabled>
                     Tidak tersedia
+                  </button>
+                ) : booked ? (
+                  <button className="btn btn--block" disabled>
+                    Sedang digunakan
                   </button>
                 ) : (
                   <Link to={`/booking/${lift.id}`} className="btn btn--primary btn--block">
