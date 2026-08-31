@@ -58,8 +58,33 @@ export default function AdminBookings() {
   const handleStatus = async (id, status) => {
     setError('')
     const { error } = await supabase.from('bookings').update({ status }).eq('id', id)
-    if (error) setError(error.message)
-    else load()
+    if (error) {
+      setError(error.message)
+      return
+    }
+    if (status === 'confirmed') {
+      const target = bookings.find((b) => b.id === id)
+      if (target) {
+        await publishMqtt(target)
+      }
+    }
+    load()
+  }
+
+  const publishMqtt = async (b) => {
+    const { error } = await supabase.functions.invoke('publish-mqtt', {
+      body: {
+        event: 'booking_approved',
+        lift: b.lift?.name,
+        lift_code: b.lift?.code,
+        user_name: b.user?.full_name,
+        start_date: b.start_date,
+        end_date: b.end_date,
+      },
+    })
+    if (error) {
+      setError('Pemesanan disetujui, tetapi gagal kirim ke MQTT: ' + error.message)
+    }
   }
 
   if (loading) {
