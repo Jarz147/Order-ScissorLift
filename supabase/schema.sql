@@ -36,7 +36,7 @@ create table if not exists public.bookings (
   user_id uuid not null references public.profiles (id) on delete cascade,
   start_date date not null,
   end_date date not null,
-  status text not null default 'confirmed' check (status in ('confirmed', 'cancelled', 'completed')),
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'rejected', 'cancelled', 'completed')),
   note text,
   document_path text,           -- path file di Storage bucket
   created_at timestamptz not null default now(),
@@ -45,9 +45,9 @@ create table if not exists public.bookings (
 
 -- 5) CEGAH DOUBLE BOOKING (level database)
 --    Aturan: SATU LIFT = SATU USER SEKALIGUS.
---    Satu lift hanya boleh punya SATU booking berstatus 'confirmed' dalam
---    satu waktu (tidak peduli tanggalnya). Lift baru bisa dipesan lagi
---    setelah booking 'confirmed' itu diselesaikan/dibatalkan.
+--    Lift terkunci (hanya boleh ada 1 booking aktif per lift) selama
+--    statusnya 'pending' (menunggu approval admin) atau 'confirmed'.
+--    Lift baru bisa dipesan lagi setelah booking itu diselesaikan/ditolak/dibatalkan.
 alter table public.bookings
   drop constraint if exists bookings_no_overlap;
 alter table public.bookings
@@ -56,7 +56,7 @@ alter table public.bookings
   add constraint bookings_single_confirmed
   exclude using gist (
     lift_id with =
-  ) where (status = 'confirmed');
+  ) where (status in ('pending', 'confirmed'));
 
 -- 6) Index pendukung
 create index if not exists bookings_lift_date_idx on public.bookings (lift_id, start_date, end_date);
@@ -247,10 +247,15 @@ drop policy if exists "bookings_insert_auth" on public.bookings;
 create policy "bookings_insert_auth" on public.bookings
   for insert with check (auth.uid() = user_id);
 
+-- user hanya boleh membatalkan booking miliknya (ubah status jadi 'cancelled')
 drop policy if exists "bookings_update_own" on public.bookings;
 create policy "bookings_update_own" on public.bookings
-  for update using (auth.uid() = user_id);
+  for update using (auth.uid() = user_id)
+  with check (
+    new.status = 'cancelled'
+  );
 
+-- admin boleh mengubah status apa pun (setujui/tolak/selesaikan/batalkan)
 drop policy if exists "bookings_update_admin" on public.bookings;
 create policy "bookings_update_admin" on public.bookings
   for update using (public.is_admin());

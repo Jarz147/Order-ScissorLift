@@ -4,7 +4,9 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
 const statusLabel = {
+  pending: 'Menunggu approval',
   confirmed: 'Dikonfirmasi',
+  rejected: 'Ditolak',
   cancelled: 'Dibatalkan',
   completed: 'Selesai',
 }
@@ -40,7 +42,7 @@ export default function Dashboard() {
 
       const map = {}
       for (const b of bookingData) {
-        if (b.status === 'confirmed') {
+        if (b.status === 'pending' || b.status === 'confirmed') {
           if (!map[b.lift_id]) map[b.lift_id] = []
           map[b.lift_id].push(b)
         }
@@ -180,7 +182,8 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td>
-                        {b.status === 'confirmed' && b.user_id === user.id && (
+                        {(b.status === 'pending' || b.status === 'confirmed') &&
+                          b.user_id === user.id && (
                           <button
                             onClick={() => handleCancel(b.id)}
                             className="btn btn--danger btn--sm"

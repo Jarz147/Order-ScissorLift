@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase, STORAGE_BUCKET } from '../../lib/supabase'
 
 const statusLabel = {
+  pending: 'Menunggu approval',
   confirmed: 'Dikonfirmasi',
+  rejected: 'Ditolak',
   cancelled: 'Dibatalkan',
   completed: 'Selesai',
 }
@@ -104,15 +106,34 @@ export default function AdminBookings() {
                 <span className="muted small">Dokumen terlampir</span>
               ))}
             <div className="card__actions">
-              <select
-                value={b.status}
-                onChange={(e) => handleStatus(b.id, e.target.value)}
-                className="select"
-              >
-                <option value="confirmed">Dikonfirmasi</option>
-                <option value="cancelled">Dibatalkan</option>
-                <option value="completed">Selesai</option>
-              </select>
+              {b.status === 'pending' ? (
+                <>
+                  <button
+                    onClick={() => handleStatus(b.id, 'confirmed')}
+                    className="btn btn--primary btn--sm"
+                  >
+                    Setujui
+                  </button>
+                  <button
+                    onClick={() => handleStatus(b.id, 'rejected')}
+                    className="btn btn--danger btn--sm"
+                  >
+                    Tolak
+                  </button>
+                </>
+              ) : (
+                <select
+                  value={b.status}
+                  onChange={(e) => handleStatus(b.id, e.target.value)}
+                  className="select"
+                >
+                  <option value="pending">Menunggu approval</option>
+                  <option value="confirmed">Dikonfirmasi</option>
+                  <option value="rejected">Ditolak</option>
+                  <option value="cancelled">Dibatalkan</option>
+                  <option value="completed">Selesai</option>
+                </select>
+              )}
             </div>
           </div>
         ))}

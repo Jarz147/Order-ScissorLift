@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase, STORAGE_BUCKET } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -19,6 +19,8 @@ export default function Booking() {
   const [file, setFile] = useState(null)
   const [conflict, setConflict] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [done, setDone] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
@@ -114,7 +116,7 @@ export default function Booking() {
       end_date: endDate,
       note: note || null,
       document_path: documentPath,
-      status: 'confirmed',
+      status: 'pending',
     })
 
     setSubmitting(false)
@@ -129,7 +131,10 @@ export default function Booking() {
       return
     }
 
-    navigate('/dashboard')
+    setSuccess(
+      'Permintaan pemesanan terkirim dan menunggu persetujuan admin. Lift akan terkunci sampai admin memutuskan.',
+    )
+    setDone(true)
   }
 
   if (loading) {
@@ -144,7 +149,22 @@ export default function Booking() {
     <div className="booking">
       <h1>Pesan Scissor Lift</h1>
       {error && <div className="alert alert--error">{error}</div>}
-      {lift && (
+      {success && <div className="alert alert--ok">{success}</div>}
+      {done ? (
+        <div className="card">
+          <h3>Pemesanan terkirim</h3>
+          <p className="muted">
+            Permintaan Anda sedang menunggu persetujuan admin. Pantau status di Log
+            Pemesanan.
+          </p>
+          <div className="card__actions">
+            <Link to="/dashboard" className="btn btn--primary">
+              Kembali ke Dashboard
+            </Link>
+          </div>
+        </div>
+      ) : (
+        lift && (
         <div className="card">
           <div className="card__head">
             <h3>{lift.name}</h3>
@@ -209,6 +229,7 @@ export default function Booking() {
             </button>
           </form>
         </div>
+        )
       )}
     </div>
   )
