@@ -452,6 +452,13 @@ textarea:focus {
   margin: 0;
 }
 
+.auth__logo {
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+  align-self: center;
+}
+
 .auth__card a {
   color: var(--primary);
   text-decoration: none;

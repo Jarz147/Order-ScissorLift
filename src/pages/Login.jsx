@@ -25,6 +25,11 @@ export default function Login() {
   return (
     <div className="auth">
       <form className="auth__card" onSubmit={handleSubmit}>
+        <img
+          className="auth__logo"
+          src={`${import.meta.env.BASE_URL}logo.png`}
+          alt="Logo"
+        />
         <h1>Masuk</h1>
         <p className="muted">Sistem Reservasi Scissor Lift</p>
         {error && <div className="alert alert--error">{error}</div>}
