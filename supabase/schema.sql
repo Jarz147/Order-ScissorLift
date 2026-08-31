@@ -43,7 +43,14 @@ create table if not exists public.bookings (
   check (end_date >= start_date)
 );
 
--- 5) CEGAH DOUBLE BOOKING (level database)
+-- 5) Perbarui CHECK constraint status (untuk tabel yang sudah ada)
+alter table public.bookings
+  drop constraint if exists bookings_status_check;
+alter table public.bookings
+  add constraint bookings_status_check
+  check (status in ('pending', 'confirmed', 'rejected', 'cancelled', 'completed'));
+
+-- 6) CEGAH DOUBLE BOOKING (level database)
 --    Aturan: SATU LIFT = SATU USER SEKALIGUS.
 --    Lift terkunci (hanya boleh ada 1 booking aktif per lift) selama
 --    statusnya 'pending' (menunggu approval admin) atau 'confirmed'.
