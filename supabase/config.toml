@@ -1,0 +1,4 @@
+project_id = "scissor-lift-app"
+
+[functions.publish-mqtt]
+verify_jwt = false
