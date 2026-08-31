@@ -51,14 +51,16 @@ export default function Booking() {
       .from('bookings')
       .select('*')
       .eq('lift_id', liftId)
-      .eq('status', 'confirmed')
+      .in('status', ['pending', 'confirmed'])
     if (error) {
       setError(error.message)
       return false
     }
     if (data.length > 0) {
       setConflict(true)
-      setError('Scissor lift sudah dipesan dan sedang tidak tersedia untuk dipesan.')
+      setError(
+        'Scissor lift sedang dalam proses pemesanan (menunggu approval) atau sedang digunakan dan tidak dapat dipesan.',
+      )
       return false
     }
     setConflict(false)
