@@ -258,9 +258,7 @@ create policy "bookings_insert_auth" on public.bookings
 drop policy if exists "bookings_update_own" on public.bookings;
 create policy "bookings_update_own" on public.bookings
   for update using (auth.uid() = user_id)
-  with check (
-    new.status = 'cancelled'
-  );
+  with check (status = 'cancelled');
 
 -- admin boleh mengubah status apa pun (setujui/tolak/selesaikan/batalkan)
 drop policy if exists "bookings_update_admin" on public.bookings;
